@@ -29,7 +29,7 @@ export default function DatenschutzPage() {
         Deutschland
         <br />
         E-Mail:{" "}
-        <a href="mailto:hi@telefon-geselle.de">hi@telefon-geselle.de</a>
+        <a href="mailto:hallo@telefon-geselle.de">hallo@telefon-geselle.de</a>
       </p>
 
       <h2>2. Allgemeine Hinweise</h2>

@@ -28,7 +28,7 @@ export default function ImpressumPage() {
         <a href="tel:+491721871555">0172 1871555</a>
         <br />
         E-Mail:{" "}
-        <a href="mailto:hi@telefon-geselle.de">hi@telefon-geselle.de</a>
+        <a href="mailto:hallo@telefon-geselle.de">hallo@telefon-geselle.de</a>
       </p>
 
       <h2>Umsatzsteuer</h2>
