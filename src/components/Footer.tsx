@@ -65,22 +65,24 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-orange" />
-                <a href="tel:+4930123456789" className="hover:text-white transition-colors">
-                  +49 30 123 456 789
+                <a href="tel:+491721871555" className="hover:text-white transition-colors">
+                  0172 1871555
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-orange" />
                 <a
-                  href="mailto:hallo@telefon-geselle.de"
+                  href="mailto:hi@telefon-geselle.de"
                   className="hover:text-white transition-colors"
                 >
-                  hallo@telefon-geselle.de
+                  hi@telefon-geselle.de
                 </a>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-orange shrink-0 mt-0.5" />
-                <span>Berlin, Deutschland</span>
+                <span>
+                  Katharinenstraße 19A, 10711 Berlin
+                </span>
               </li>
             </ul>
           </div>

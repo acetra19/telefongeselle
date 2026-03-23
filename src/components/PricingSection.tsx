@@ -61,7 +61,8 @@ export default function PricingSection() {
 
         <div className="mt-10 text-center">
           <p className="text-sm text-slate-500">
-            Alle Preise zzgl. MwSt. · Monatlich kündbar · 14 Tage kostenlos
+            Endpreise (Kleinunternehmer § 19 UStG, keine Umsatzsteuer) ·
+            Monatlich kündbar · 14 Tage kostenlos
             testen
           </p>
         </div>
