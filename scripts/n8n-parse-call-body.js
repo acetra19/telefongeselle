@@ -73,16 +73,18 @@ function parseCallBody(body) {
       .join(" ");
 
     let addr =
+      agentOnly.match(/Berliner Straße\s*\d+\s+in\s+Schöneberg/i)?.[0] ||
       agentOnly.match(
-        /Berliner Straße\s*\d+\s+in\s+Schöneberg/i
+        /(?:Rohrbruch,\s*)?[A-Za-zäöüÄÖÜß]+weg\s*\d+\s*,\s*Schöneberg/i
       )?.[0] ||
       agentOnly.match(
-        /Straße\s*\d+[^.!?]*?(?:in\s+)?Schöneberg/i
+        /[A-Za-zäöüÄÖÜß]+weg\s*\d+[^.!\n]*Schöneberg/i
       )?.[0] ||
+      agentOnly.match(/Straße\s*\d+[^.!?]*?(?:in\s+)?Schöneberg/i)?.[0] ||
       null;
 
     if (addr) {
-      addr = addr.replace(/\s+/g, " ").trim();
+      addr = addr.replace(/^Rohrbruch,\s*/i, "").replace(/\s+/g, " ").trim();
       customerAddress = /\bBerlin\b/i.test(addr) ? addr : `${addr}, Berlin`;
     } else {
       const userBlob = (t.match(/User:[^\n]+/gi) || []).join(" ");
