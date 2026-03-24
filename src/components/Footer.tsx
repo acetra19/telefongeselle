@@ -36,6 +36,14 @@ export default function Footer() {
                   Demo anfordern
                 </a>
               </li>
+              <li>
+                <a
+                  href="/tools/prompt-assistant"
+                  className="hover:text-white transition-colors"
+                >
+                  Prompt-Hilfe (intern)
+                </a>
+              </li>
             </ul>
           </div>
 
