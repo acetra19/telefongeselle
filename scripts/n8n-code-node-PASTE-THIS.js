@@ -1,13 +1,4 @@
-/**
- * Reference parser for Handwerker-AI / Twilio webhook body.
- * Copy parseCallBody into an n8n Code node, or require this file in tests.
- *
- * n8n Code node (Webhook receives full item; adjust path to body):
- *   const body = $json.body || $json;
- *   return [{ json: parseCallBody(body) }];
- *
- * Expected transcript lines: "Agent: ..." and "User: ..." (also accepts Assistant:)
- */
+// === n8n Code node (JavaScript) — gesamten Block einfügen, nichts weiter ===
 
 function extractSarahNote(transcript) {
   const lines = transcript
@@ -60,7 +51,11 @@ function parseCallBody(body) {
       t.match(/\bich\s+bin\s+(?:Herr|Frau)?\s*([A-ZÄÖÜ][a-zäöüß]+)\b/i);
     if (m) {
       const last = m[1];
-      const prefix = /\bHerr\s+/.test(m[0]) ? "Herr" : /\bFrau\s+/.test(m[0]) ? "Frau" : "Herr";
+      const prefix = /\bHerr\s+/.test(m[0])
+        ? "Herr"
+        : /\bFrau\s+/.test(m[0])
+          ? "Frau"
+          : "Herr";
       customerName = `${prefix} ${last}`;
     }
   }
@@ -73,12 +68,8 @@ function parseCallBody(body) {
       .join(" ");
 
     let addr =
-      agentOnly.match(
-        /Berliner Straße\s*\d+\s+in\s+Schöneberg/i
-      )?.[0] ||
-      agentOnly.match(
-        /Straße\s*\d+[^.!?]*?(?:in\s+)?Schöneberg/i
-      )?.[0] ||
+      agentOnly.match(/Berliner Straße\s*\d+\s+in\s+Schöneberg/i)?.[0] ||
+      agentOnly.match(/Straße\s*\d+[^.!?]*?(?:in\s+)?Schöneberg/i)?.[0] ||
       null;
 
     if (addr) {
@@ -135,29 +126,28 @@ function parseCallBody(body) {
   };
 }
 
-module.exports = { parseCallBody };
+const item = $input.first().json;
+const body = item.body ?? item;
+const result = parseCallBody(body);
 
-if (require.main === module) {
-  const sample = {
-    call_id: "call_afa42ef0ad9f5bd3d807ce41f70",
-    transcript: `Agent: Einen kleinen Moment, ich bin gleich für Sie da.... was genau ist das Problem?
-User: Ja, schönen guten Tag. Ich hab bin Herr Schmidt. Ich aus der Berliner Straße vierundvierzig und ich hab ein Rohrbruch im Keller. 
-Agent: Verstehe, Herr Schmidt. In welchem Bezirk sind Sie in der Berliner Straße 44?
-Agent: Mhm, okay, könnten Sie mir bitte noch den Bezirk nennen?
-User: In Schöneberg. 
-Agent: Alles klar, Herr Schmidt aus Berliner Straße 44 in Schöneberg. Sind Sie unter der Nummer erreichbar, von der Sie gerade anrufen?
-User: Ja, bin ich. 
-Agent: Verstehe, Herr Schmidt. Das ist ein Notfall wegen Rohrbruch im Keller. Ich leite das sofort weiter.
-User: Danke sehr. 
-Agent: Danke, Herr Schmidt. Unser Kollege meldet sich in 15-30 Minuten bei Ihnen. Noch Fragen?
-User: Ja, das ist gut, danke. 
-Agent: Ich wünsche Ihnen gute Besserung und einen ruhigen Tag. Auf Wiederhören!
-`,
-    customer_name: null,
-    customer_address: null,
-    customer_phone: "+491721871555",
-    issue_type: null,
-    zip_code: null,
-  };
-  console.log(JSON.stringify(parseCallBody(sample), null, 2));
-}
+return [{ json: { ...item, body: result } }];
+
+/*
+=== Nach dem Code-Node: EINE WhatsApp-Nachricht (ein Textfeld) ===
+
+🚨 *NEUER EINSATZ:* {{ ($json.body.issue_type || "NOTFALL").toString().toUpperCase() }}
+---
+👤 *Kunde:* {{ $json.body.customer_name }}
+---
+🏠 *Adresse:* {{ $json.body.customer_address }}
+---
+📞 *Rückruf:* {{ $json.body.customer_phone }}
+---
+🛠️ *Diagnose:* {{ $json.body.issue_type || "Siehe Notiz" }}
+---
+📖 *Sarahs Notiz:* "{{ $json.body.sarah_note }}"
+---
+📍 *Google Maps:* {{ $json.body.maps_url }}
+
+(maps_url und sarah_note setzt parseCallBody im Code-Node)
+*/
