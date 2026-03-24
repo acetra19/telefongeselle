@@ -1,27 +1,37 @@
 import { NextResponse } from "next/server";
 
 type Body = {
+  globalPrompt?: string;
   transcripts?: string;
   reviews?: string;
 };
 
 const SYSTEM = `You are a prompt engineer for a German B2B phone AI ("Sarah") for plumbers/sanitary trades.
-Given CALL TRANSCRIPTS and CUSTOMER REVIEWS (may be in German or English), extract ONLY concrete, actionable instructions that belong in ONE global system prompt.
 
-Rules:
-- Output MUST be valid JSON only, no markdown fences.
-- Language of ALL string values in the JSON (instructions, fromTranscripts, fromReviews, avoid, notes): English only. These strings will be pasted into an English system prompt; the AI may still speak German to callers.
-- Be specific: imperative formulations suitable to paste into a system prompt ("Always ask...", "Never say...", "If the caller mentions X, then Y").
-- Merge duplicates; resolve contradictions by preferring safer/more polite behavior and noting the trade-off in "notes".
-- If input is empty or useless, return empty arrays and a short "notes" explanation.
+You receive three inputs:
+1) CURRENT GLOBAL PROMPT — the live English system prompt (may be empty).
+2) CALL TRANSCRIPTS — evidence from real calls (may be empty).
+3) CUSTOMER REVIEWS — evidence from customers (may be empty).
+
+Your task: output ONLY genuinely NEW, concrete instructions that should be ADDED or CHANGED, and they must be STRICTLY grounded in the transcripts or reviews. Use the current global prompt as the baseline to avoid duplication.
+
+Hard rules:
+- Do NOT suggest anything that is already covered by the current global prompt (same intent, even if different wording). Put those cases into "skippedAsAlreadyInPrompt" with a one-line English explanation (e.g. "Skipped: asking for address — already in global prompt under 'collect caller address'").
+- Every item in "instructions", "fromTranscripts", "fromReviews", and "avoid" must be traceable to a specific pattern, gap, or quote implied by transcripts OR reviews. If there is no such evidence, use empty arrays.
+- Do not invent generic phone-AI tips unless the evidence clearly implies a gap the global prompt does not address.
+- "avoid" is only for behaviors/phrases to forbid that are evidenced by a bad outcome or complaint in transcripts/reviews.
+
+Output MUST be valid JSON only, no markdown fences.
+Language of ALL string values: English (for an English system prompt; the AI may still speak German to callers).
 
 JSON schema:
 {
-  "instructions": string[],           // unified list, max 25 items, each one line
-  "fromTranscripts": string[],      // subset traceable to transcripts
-  "fromReviews": string[],          // subset traceable to reviews
-  "avoid": string[],                // phrases/behaviors to forbid
-  "notes": string                   // optional: conflicts, assumptions, gaps
+  "instructions": string[],              // unified NEW items only, max 25
+  "fromTranscripts": string[],           // subset justified by transcripts
+  "fromReviews": string[],               // subset justified by reviews
+  "avoid": string[],                     // evidenced avoid list
+  "skippedAsAlreadyInPrompt": string[],  // what you considered but did NOT add because already in global prompt
+  "notes": string                        // optional: conflicts, thin evidence, assumptions
 }`;
 
 export async function POST(request: Request) {
@@ -35,6 +45,7 @@ export async function POST(request: Request) {
     );
   }
 
+  const globalPrompt = (body.globalPrompt ?? "").trim();
   const transcripts = (body.transcripts ?? "").trim();
   const reviews = (body.reviews ?? "").trim();
 
@@ -57,7 +68,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const userContent = `## Transkripte (Anrufe)\n\n${transcripts || "(leer)"}\n\n## Kunden-Reviews\n\n${reviews || "(leer)"}`;
+  const userContent = `## Current global prompt (baseline — do not duplicate)\n\n${globalPrompt || "(empty — no baseline; still only suggest from transcripts/reviews)"}\n\n## Call transcripts (evidence)\n\n${transcripts || "(empty)"}\n\n## Customer reviews (evidence)\n\n${reviews || "(empty)"}`;
 
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -68,7 +79,7 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-        temperature: 0.3,
+        temperature: 0.25,
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: userContent },
@@ -101,6 +112,7 @@ export async function POST(request: Request) {
       fromTranscripts?: string[];
       fromReviews?: string[];
       avoid?: string[];
+      skippedAsAlreadyInPrompt?: string[];
       notes?: string;
     };
 
@@ -109,6 +121,7 @@ export async function POST(request: Request) {
       fromTranscripts: parsed.fromTranscripts ?? [],
       fromReviews: parsed.fromReviews ?? [],
       avoid: parsed.avoid ?? [],
+      skippedAsAlreadyInPrompt: parsed.skippedAsAlreadyInPrompt ?? [],
       notes: parsed.notes ?? "",
     });
   } catch (e) {

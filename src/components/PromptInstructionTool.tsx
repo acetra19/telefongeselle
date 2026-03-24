@@ -8,6 +8,7 @@ import {
   Loader2,
   Copy,
   Check,
+  ScrollText,
 } from "lucide-react";
 
 type ExtractResult = {
@@ -15,10 +16,12 @@ type ExtractResult = {
   fromTranscripts: string[];
   fromReviews: string[];
   avoid: string[];
+  skippedAsAlreadyInPrompt: string[];
   notes: string;
 };
 
 export default function PromptInstructionTool() {
+  const [globalPrompt, setGlobalPrompt] = useState("");
   const [transcripts, setTranscripts] = useState("");
   const [reviews, setReviews] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ export default function PromptInstructionTool() {
       const res = await fetch("/api/prompt-extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcripts, reviews }),
+        body: JSON.stringify({ globalPrompt, transcripts, reviews }),
       });
       const data = await res.json();
 
@@ -64,7 +67,7 @@ export default function PromptInstructionTool() {
   function copyAll() {
     if (!result) return;
     const blocks = [
-      "## Unified instructions (global prompt)",
+      "## Unified instructions (global prompt) — NEW only",
       ...result.instructions.map((s) => `- ${s}`),
       "",
       "## From transcripts",
@@ -75,6 +78,9 @@ export default function PromptInstructionTool() {
       "",
       "## Avoid",
       ...result.avoid.map((s) => `- ${s}`),
+      "",
+      "## Skipped (already in your global prompt)",
+      ...result.skippedAsAlreadyInPrompt.map((s) => `- ${s}`),
       "",
       result.notes ? `## Notes\n${result.notes}` : "",
     ]
@@ -89,13 +95,26 @@ export default function PromptInstructionTool() {
     <div className="space-y-8">
       <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
         <p className="text-slate-600 text-sm leading-relaxed mb-6">
-          Füge unten beliebig viele <strong>transkribierte Gespräche</strong> und
-          separate <strong>Kunden-Reviews</strong> ein. Das Tool extrahiert daraus
-          <strong> konkrete Anweisungen</strong> – die Vorschläge erscheinen
-          auf <strong>Englisch</strong>, damit du sie direkt in einen englischen
-          globalen System-Prompt übernehmen kannst (die KI spricht weiterhin
-          deutsch mit Anrufern).
+          Oben den <strong>aktuellen globalen Prompt</strong> einfügen – das
+          Modell vergleicht damit und schlägt nur <strong>Neues</strong> vor,
+          das sich aus <strong>Transkripten</strong> oder <strong>Reviews</strong>
+          begründen lässt (keine Dubletten zu dem, was schon im Prompt steht).
+          Ausgabe auf <strong>Englisch</strong>.
         </p>
+
+        <label className="block mb-6">
+          <span className="flex items-center gap-2 text-sm font-semibold text-slate-900 mb-2">
+            <ScrollText className="w-4 h-4 text-navy" />
+            Globaler Prompt (aktueller Stand)
+          </span>
+          <textarea
+            value={globalPrompt}
+            onChange={(e) => setGlobalPrompt(e.target.value)}
+            rows={10}
+            placeholder="Hier deinen kompletten englischen System-Prompt einfügen – optional, aber empfohlen, damit keine bereits abgedeckten Regeln nochmal vorgeschlagen werden."
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy font-mono"
+          />
+        </label>
 
         <div className="grid md:grid-cols-2 gap-6">
           <label className="block">
@@ -160,7 +179,7 @@ export default function PromptInstructionTool() {
                 Vorschlag für deinen globalen Prompt
               </h2>
               <p className="text-sm text-slate-500 mt-1">
-                Generated suggestions in English
+                Generated suggestions in English (new only vs. your baseline)
               </p>
             </div>
             <button
@@ -177,13 +196,18 @@ export default function PromptInstructionTool() {
             </button>
           </div>
 
-          <Section title="Unified instructions" items={result.instructions} />
+          <Section title="Unified instructions (NEW only)" items={result.instructions} />
           <Section
             title="From transcripts"
             items={result.fromTranscripts}
           />
           <Section title="From reviews" items={result.fromReviews} />
           <Section title="Avoid" items={result.avoid} accent />
+          <Section
+            title="Skipped (already in prompt)"
+            items={result.skippedAsAlreadyInPrompt}
+            muted
+          />
 
           {result.notes ? (
             <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-950">
@@ -201,17 +225,19 @@ function Section({
   title,
   items,
   accent,
+  muted,
 }: {
   title: string;
   items: string[];
   accent?: boolean;
+  muted?: boolean;
 }) {
   if (!items.length) return null;
   return (
     <div className="mb-6 last:mb-0">
       <h3
         className={`text-sm font-bold uppercase tracking-wide mb-2 ${
-          accent ? "text-red-700" : "text-slate-700"
+          accent ? "text-red-700" : muted ? "text-slate-500" : "text-slate-700"
         }`}
       >
         {title}
