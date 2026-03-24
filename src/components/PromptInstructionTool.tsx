@@ -64,19 +64,19 @@ export default function PromptInstructionTool() {
   function copyAll() {
     if (!result) return;
     const blocks = [
-      "## Anweisungen (globaler Prompt)",
+      "## Unified instructions (global prompt)",
       ...result.instructions.map((s) => `- ${s}`),
       "",
-      "## Aus Transkripten",
+      "## From transcripts",
       ...result.fromTranscripts.map((s) => `- ${s}`),
       "",
-      "## Aus Reviews",
+      "## From reviews",
       ...result.fromReviews.map((s) => `- ${s}`),
       "",
-      "## Vermeiden",
+      "## Avoid",
       ...result.avoid.map((s) => `- ${s}`),
       "",
-      result.notes ? `## Hinweise\n${result.notes}` : "",
+      result.notes ? `## Notes\n${result.notes}` : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -91,9 +91,10 @@ export default function PromptInstructionTool() {
         <p className="text-slate-600 text-sm leading-relaxed mb-6">
           Füge unten beliebig viele <strong>transkribierte Gespräche</strong> und
           separate <strong>Kunden-Reviews</strong> ein. Das Tool extrahiert daraus
-          <strong> konkrete Anweisungen</strong>, die du in deinen einen
-          globalen System-Prompt übernehmen kannst (Ton, Pflichtfragen,
-          Tabus, Sonderfälle).
+          <strong> konkrete Anweisungen</strong> – die Vorschläge erscheinen
+          auf <strong>Englisch</strong>, damit du sie direkt in einen englischen
+          globalen System-Prompt übernehmen kannst (die KI spricht weiterhin
+          deutsch mit Anrufern).
         </p>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -154,9 +155,14 @@ export default function PromptInstructionTool() {
       {result && (
         <div className="bg-navy/5 rounded-2xl border border-navy/20 p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h2 className="text-xl font-bold text-slate-900">
-              Vorschlag für deinen globalen Prompt
-            </h2>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                Vorschlag für deinen globalen Prompt
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Generated suggestions in English
+              </p>
+            </div>
             <button
               type="button"
               onClick={copyAll}
@@ -171,17 +177,17 @@ export default function PromptInstructionTool() {
             </button>
           </div>
 
-          <Section title="Einheitliche Anweisungen" items={result.instructions} />
+          <Section title="Unified instructions" items={result.instructions} />
           <Section
-            title="Aus Transkripten ableitbar"
+            title="From transcripts"
             items={result.fromTranscripts}
           />
-          <Section title="Aus Reviews ableitbar" items={result.fromReviews} />
-          <Section title="Vermeiden / nicht sagen" items={result.avoid} accent />
+          <Section title="From reviews" items={result.fromReviews} />
+          <Section title="Avoid" items={result.avoid} accent />
 
           {result.notes ? (
             <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-950">
-              <strong className="block mb-1">Hinweise</strong>
+              <strong className="block mb-1">Notes</strong>
               {result.notes}
             </div>
           ) : null}
