@@ -1,37 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, Send, CheckCircle2, Loader2 } from "lucide-react";
+import { Phone, Send, CheckCircle2 } from "lucide-react";
 
 export default function ContactForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("sending");
-
-    try {
-      const response = await fetch(
-        "https://your-n8n-instance.com/webhook/telefon-geselle",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, phone, timestamp: new Date().toISOString() }),
-        }
-      );
-
-      if (response.ok) {
-        setStatus("success");
-        setName("");
-        setPhone("");
-      } else {
-        setStatus("error");
-      }
-    } catch {
-      setStatus("error");
-    }
+    window.alert(
+      "Wähle jetzt +13613045917 und melde dich bei Sarah mit deinem Sanitär Problem"
+    );
+    setName("");
+    setPhone("");
   }
 
   return (
@@ -70,109 +52,76 @@ export default function ContactForm() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-2xl">
-            {status === "success" ? (
-              <SuccessMessage />
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">
-                    Demo-Anruf anfordern
-                  </h3>
-                  <p className="text-sm text-slate-500">
-                    Wir melden uns innerhalb von 24 Stunden
-                  </p>
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">
+                  Demo-Anruf anfordern
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Nach dem Absenden zeigen wir Ihnen direkt die Nummer für den
+                  Demo-Anruf.
+                </p>
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
-                    Ihr Name
-                  </label>
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
+                  Ihr Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="z.B. Jens Müller, Sanitär Müller GmbH"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-shadow"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
+                  Telefonnummer
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
-                    id="name"
-                    type="text"
+                    id="phone"
+                    type="tel"
                     required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="z.B. Jens Müller, Sanitär Müller GmbH"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-shadow"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="0176 123 456 78"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-shadow"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-slate-700 mb-1.5"
-                  >
-                    Telefonnummer
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      id="phone"
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="0176 123 456 78"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent transition-shadow"
-                    />
-                  </div>
-                </div>
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 bg-orange hover:bg-orange-dark text-white font-bold py-4 rounded-xl transition-colors text-lg"
+              >
+                <Send className="w-5 h-5" />
+                Jetzt Demo-Anruf starten
+              </button>
 
-                <button
-                  type="submit"
-                  disabled={status === "sending"}
-                  className="w-full flex items-center justify-center gap-2 bg-orange hover:bg-orange-dark disabled:opacity-60 text-white font-bold py-4 rounded-xl transition-colors text-lg"
-                >
-                  {status === "sending" ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Wird gesendet...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Jetzt Demo-Anruf anfordern
-                    </>
-                  )}
-                </button>
+              <p className="text-xs text-slate-500 text-center">
+                Nach dem Klick erscheint ein Hinweis mit der Nummer von Sarah.
+              </p>
 
-                {status === "error" && (
-                  <p className="text-sm text-red-500 text-center">
-                    Es gab ein Problem. Bitte versuchen Sie es erneut oder
-                    rufen Sie uns direkt an.
-                  </p>
-                )}
-
-                <p className="text-xs text-slate-400 text-center">
-                  Ihre Daten werden DSGVO-konform verarbeitet und nicht an
-                  Dritte weitergegeben.
-                </p>
-              </form>
-            )}
+              <p className="text-xs text-slate-400 text-center">
+                Ihre Daten werden DSGVO-konform verarbeitet und nicht an Dritte
+                weitergegeben.
+              </p>
+            </form>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function SuccessMessage() {
-  return (
-    <div className="text-center py-8">
-      <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-        <CheckCircle2 className="w-8 h-8" />
-      </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-2">
-        Anfrage erhalten!
-      </h3>
-      <p className="text-slate-600">
-        Wir melden uns innerhalb von 24 Stunden bei Ihnen. Schauen Sie
-        derweil auf Ihr Handy – der Telefon-Geselle ist fast da.
-      </p>
-    </div>
   );
 }
