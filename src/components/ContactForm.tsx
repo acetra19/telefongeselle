@@ -6,12 +6,11 @@ import { Phone, Send, CheckCircle2 } from "lucide-react";
 export default function ContactForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [showDemoPopup, setShowDemoPopup] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    window.alert(
-      "Wähle jetzt +13613045917 und melde dich bei Sarah mit deinem Sanitär Problem"
-    );
+    setShowDemoPopup(true);
     setName("");
     setPhone("");
   }
@@ -122,6 +121,40 @@ export default function ContactForm() {
           </div>
         </div>
       </div>
+
+      {showDemoPopup && (
+        <div className="fixed inset-0 z-50 px-4 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-7">
+            <div className="w-12 h-12 rounded-xl bg-orange/10 text-orange flex items-center justify-center mb-4">
+              <Phone className="w-6 h-6" />
+            </div>
+
+            <h3 className="text-2xl font-extrabold text-slate-900 mb-2">
+              Dein Demo-Anruf
+            </h3>
+            <p className="text-slate-600 mb-5 leading-relaxed">
+              Wähle jetzt <span className="font-semibold">+13613045917</span>{" "}
+              und melde dich bei Sarah mit deinem Sanitär Problem.
+            </p>
+
+            <a
+              href="tel:+13613045917"
+              className="w-full inline-flex items-center justify-center gap-2 bg-orange hover:bg-orange-dark text-white font-bold py-3.5 rounded-xl transition-colors"
+            >
+              <Phone className="w-5 h-5" />
+              Jetzt anrufen
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setShowDemoPopup(false)}
+              className="w-full mt-3 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
